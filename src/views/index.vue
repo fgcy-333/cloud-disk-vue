@@ -205,7 +205,6 @@ export default {
       // console.log(this.$route.name==files);
       if (this.$route.name == "files") {
         this.$store.commit("updateCurrentFolder", current);
-        console.log(207);
       }
       // if (this.isCreated) {
       //   this.getListData();

@@ -1,7 +1,7 @@
 <template>
   <div
-    class="iconTypeListContainer"
-    :class="[
+      class="iconTypeListContainer"
+      :class="[
       banScroll ? 'banScroll' : '',
       $store.state.showType == 'icon' ? '' : 'tableTypeListContainer',
     ]"
@@ -9,139 +9,133 @@
     <div class="IconTypeList" v-if="$store.state.showType == 'icon'">
       <!-- 文件夹 -->
       <div
-        class="listItem folderItem"
-        v-for="(item, index) in currentChildrenFolder"
-        @dblclick="openCurrentFolder(item)"
-        @contextmenu.prevent="showMenu($event, item, 'folderMenu')"
-        @dragstart="(e) => e.preventDefault()"
-        @dragover="(e) => e.preventDefault()"
-        @drop="dropItem(item)"
-        :key="index"
-      >
+          class="listItem folderItem"
+          v-for="(item, index) in currentChildrenFolder"
+          @dblclick="openCurrentFolder(item)"
+          @contextmenu.prevent="showMenu($event, item, 'folderMenu')"
+          @dragstart="(e) => e.preventDefault()"
+          @dragover="(e) => e.preventDefault()"
+          @drop="dropItem(item)"
+          :key="item.id">
+
         <div class="imgContainer">
-          <img src="~assets/img/folder.png" alt="" :draggable="false" />
+          <img src="~assets/img/folder.png" alt="" :draggable="false"/>
         </div>
+
         <input
-          type="text"
-          v-model="renameInput"
-          class="renameInput"
-          @blur="
-            rightClickFolderItem.id
-              ? renameDone(rightClickFolderItem, index, 'folder')
-              : ''
-          "
-          @keyup.enter="
-            rightClickFolderItem.id
-              ? renameDone(rightClickFolderItem, index, 'folder')
-              : ''
-          "
-          v-if="isFolderRenameInputShow && rightClickFolderItem.id == item.id"
-        />
+            type="text"
+            v-model="renameInput"
+            class="renameInput"
+            @blur="rightClickFolderItem.id? renameDone(rightClickFolderItem, index, 'folder'): ''"
+            @keyup.enter="rightClickFolderItem.id? renameDone(rightClickFolderItem, index, 'folder'): ''"
+            v-if="isFolderRenameInputShow && rightClickFolderItem.id == item.id"/>
+
         <div class="name" v-else>
-          {{
-            item.name == null
-              ? "NoNameFolder"
-              : item.name.substr(0, item.name.length - 1)
-          }}
+          {{ item.name == null ? "NoNameFolder" : item.name.substr(0, item.name.length - 1) }}
         </div>
+
       </div>
 
       <!-- 新建文件夹的模板 -->
       <div class="listItem createItem" v-if="isCreateFolderShow">
-        <img src="~assets/img/folder.png" alt="" />
+        <img src="~assets/img/folder.png" alt=""/>
         <input
-          type="text"
-          v-model="createdName"
-          class="renameInput createNameInput"
-          @blur="createNameDone"
-          @keyup.enter="createNameDone"
-        />
+            type="text"
+            v-model="createdName"
+            class="renameInput createNameInput"
+            @blur="createNameDone"
+            @keyup.enter="createNameDone"/>
       </div>
+
 
       <!-- 文件列表 -->
       <div
-        class="listItem"
-        :class="selectFiles.find((i) => i.id == item.id) ? 'selectFile' : ''"
-        v-for="(item, index) in listData"
-        :key="item.id"
-        @click="selectCurrentItem(item)"
-        @dblclick="openCurrentFile(item)"
-        @contextmenu.prevent="showMenu($event, item)"
-        :draggable="rightClickMenuType == 'files'"
-        @dragstart="onDragItemStart($event, item)"
-        @dragend="onDragEndItem"
-        slot="reference"
-      >
+          class="listItem"
+          :class="selectFiles.find((i) => i.id == item.fileId) ? 'selectFile' : ''"
+          v-for="(item, index) in listData"
+          :key="item.fileId"
+          @click="selectCurrentItem(item)"
+          @dblclick="openCurrentFile(item)"
+          @contextmenu.prevent="showMenu($event, item)"
+          :draggable="rightClickMenuType == 'files'"
+          @dragstart="onDragItemStart($event, item)"
+          @dragend="onDragEndItem"
+          slot="reference">
+
         <div class="imgContainer">
+          <!--音乐-->
           <img
-            src="~assets/img/music.png"
-            alt=""
-            v-if="item.filetype == 'audio'"
-            :draggable="false"
-          />
+              src="~assets/img/music.png"
+              alt=""
+              v-if="item.type == 'audio'"
+              :draggable="false"/>
+
+          <!--图片-->
           <img
-            :src="item.url"
-            alt=""
-            v-else-if="item.filetype == 'image'"
-            :draggable="false"
-          />
+              :src="item.url"
+              alt=""
+              v-else-if="item.type == 'image'"
+              :draggable="false"/>
 
           <!-- 视频文件 -->
-          <div class="videoContainer" v-else-if="item.filetype == 'video'">
+          <div class="videoContainer" v-else-if="item.type == 'video'">
             <video :src="item.url" class="videoItem" preload="meta"></video>
             <div class="iconContainer">
               <i class="iconfont icon-play_nor"></i>
             </div>
           </div>
+
+          <!--其他 文本-->
           <img
-            :src="require(`assets/img/${computeType(item.type)}.png`)"
-            alt=""
-            v-else
-            :draggable="false"
-          />
+              :src="require(`assets/img/${computeType(item.type)}.png`)"
+              alt=""
+              v-else
+              :draggable="false"/>
+
+          <!--收藏的文件-->
           <img
-            src="~assets/img/collect.png"
-            alt=""
-            class="collectIcon"
-            v-if="item.collection"
-            :draggable="false"
-          />
+              src="~assets/img/collect.png"
+              alt=""
+              class="collectIcon"
+              v-if="item.collection"
+              :draggable="false"/>
+
         </div>
+
         <input
-          type="text"
-          v-model="renameInput"
-          class="renameInput"
-          @blur="rightClickItem.id ? renameDone(rightClickItem, index) : ''"
-          @keyup.enter="
-            rightClickItem.id ? renameDone(rightClickItem, index) : ''
-          "
-          v-if="isRenameShow && rightClickItem.id == item.id"
-        />
+            type="text"
+            v-model="renameInput"
+            class="renameInput"
+            @blur="rightClickItem.id ? renameDone(rightClickItem, index) : ''"
+            @keyup.enter="rightClickItem.fileId ? renameDone(rightClickItem, index) : ''"
+            v-if="isRenameShow && rightClickItem.fileId == item.fileId"/>
+
         <div class="name" v-else>
-          {{ item.name == null ? "NoNameFile" : item.name }}
+          {{ item.fileName == null ? "NoNameFile" : item.fileName }}
         </div>
+
       </div>
     </div>
 
     <div class="tableTypeList" v-else>
       <!-- 文件夹 -->
       <div
-        class="tableListItem"
-        v-for="(item, index) in currentChildrenFolder"
-        @dblclick="openCurrentFolder(item)"
-        @contextmenu.prevent="showMenu($event, item, 'folderMenu')"
-        @dragover="(e) => e.preventDefault()"
-        @drop="dropItem(item)"
-        :key="index"
-      >
+          class="tableListItem"
+          v-for="(item, index) in currentChildrenFolder"
+          @dblclick="openCurrentFolder(item)"
+          @contextmenu.prevent="showMenu($event, item, 'folderMenu')"
+          @dragover="(e) => e.preventDefault()"
+          @drop="dropItem(item)"
+          :key="index">
+
         <div class="tableImgContainer">
-          <img src="~assets/img/folder.png" alt="" :draggable="false" />
+          <img src="~assets/img/folder.png" alt="" :draggable="false"/>
         </div>
         <div class="tableName">
           {{
             item.name == null
-              ? "NoNameFolder"
-              : item.name.substr(0, item.name.length - 1)
+                ? "NoNameFolder"
+                : item.name.substr(0, item.name.length - 1)
           }}
         </div>
         <div class="tableCollect">-</div>
@@ -151,87 +145,83 @@
 
       <!-- 新建文件夹的模板 -->
       <div class="tableListItem" v-if="isCreateFolderShow">
-        <img src="~assets/img/folder.png" alt="" />
+        <img src="~assets/img/folder.png" alt=""/>
         <div class="tableCreateInputContainer">
           <input
-            type="text"
-            v-model="createdName"
-            class="tableCreateInput"
-            @blur="createNameDone"
-            @keyup.enter="createNameDone"
+              type="text"
+              v-model="createdName"
+              class="tableCreateInput"
+              @blur="createNameDone"
+              @keyup.enter="createNameDone"
           />
         </div>
       </div>
 
       <!-- 文件列表 -->
       <div
-        class="tableListItem"
-        :class="selectFiles.find((i) => i.id == item.id) ? 'selectFile' : ''"
-        v-for="(item, index) in listData"
-        :key="item.id"
-        @click="selectCurrentItem(item)"
-        @dblclick="openCurrentFile(item)"
-        @contextmenu.prevent="showMenu($event, item)"
-        :draggable="rightClickMenuType == 'files'"
-        @dragstart="onDragItemStart($event, item)"
-        @dragend="onDragEndItem"
-        slot="reference"
-      >
+          class="tableListItem"
+          :class="selectFiles.find((i) => i.fileId == item.fileId) ? 'selectFile' : ''"
+          v-for="(item,index) in listData"
+          :key="item.fileId"
+          @click="selectCurrentItem(item)"
+          @dblclick="openCurrentFile(item)"
+          @contextmenu.prevent="showMenu($event, item)"
+          :draggable="rightClickMenuType == 'files'"
+          @dragstart="onDragItemStart($event, item)"
+          @dragend="onDragEndItem"
+          slot="reference">
         <div class="tableImgContainer">
           <img
-            src="~assets/img/music.png"
-            alt=""
-            v-if="item.filetype == 'audio'"
-            :draggable="false"
-          />
+              src="~assets/img/music.png"
+              alt=""
+              v-if="1===1"
+              :draggable="false"/>
           <el-image
-            :src="item.url"
-            alt=""
-            v-else-if="item.filetype == 'image'"
-            :draggable="false"
-            fit="cover"
-          />
-
-          <div class="tableVideoContainer" v-else-if="item.filetype == 'video'">
-            <video
               :src="item.url"
-              class="tableVideoItem"
-              preload="meta"
-            ></video>
+              alt=""
+              v-else-if="item.type == 'image'"
+              :draggable="false"
+              fit="cover"/>
+
+          <div class="tableVideoContainer" v-else-if="item.type == 'video'">
+            <video
+                :src="item.url"
+                class="tableVideoItem"
+                preload="meta"></video>
           </div>
+
+
           <img
-            :src="require(`assets/img/${computeType(item.type)}.png`)"
-            alt=""
-            v-else
-            :draggable="false"
-          />
+              :src="require(`assets/img/${computeType(item.type)}.png`)"
+              alt=""
+              v-else
+              :draggable="false"/>
         </div>
+
+
         <div
-          class="tableRenameInputContainer"
-          v-if="isRenameShow && rightClickItem.id == item.id"
-        >
+            class="tableRenameInputContainer"
+            v-if="isRenameShow && rightClickItem.fileId === item.fileId">
           <input
-            type="text"
-            v-model="renameInput"
-            class="tableRenameInput"
-            @blur="rightClickItem.id ? renameDone(rightClickItem, index) : ''"
-            @keyup.enter="
-              rightClickItem.id ? renameDone(rightClickItem, index) : ''
-            "
-          />
+              type="text"
+              v-model="renameInput"
+              class="tableRenameInput"
+              @blur="rightClickItem.fileId ? renameDone(rightClickItem, index) : ''"
+              @keyup.enter="rightClickItem.fileId ? renameDone(rightClickItem, index) : ''"/>
         </div>
+
 
         <div class="tableName" v-else>
-          {{ item.name == null ? "NoNameFile" : item.name + "." + item.type }}
+          {{ item.fileName == null ? "NoNameFile" : item.fileName + "." + item.type }}
         </div>
         <div class="tableCollect">
-          <img src="~assets/img/collect.png" alt="" v-if="item.collection" />
+          <img src="~assets/img/collect.png" alt="" v-if="item.collection"/>
         </div>
         <div class="tableItemSize">
           {{
             item.size == null
-              ? "未知大小"
-              : (item.size / 1048576).toFixed(2) + " MB"
+                ? "未知大小"
+                : (item.size / 1048576).toFixed(2) + " MB"
           }}
         </div>
         <div class="tableItemCreateTime">
@@ -242,18 +232,18 @@
 
     <!-- 文件右击菜单框组件 -->
     <right-click-menu
-      :menuType="rightClickMenuType == 'collect' ? 'collect' : 'file'"
-      :isMenuShow="isMenuShow"
-      :menuTop="menuTop"
-      :menuLeft="menuLeft"
-      :isCurrentFileCollected="isCurrentFileCollected"
-      @rename="rename"
-      @collectCurrentFile="collectCurrentFile"
-      @openCurrentFile="openCurrentFile(rightClickItem)"
-      @downloadCurrentFile="downloadCurrentFile('current', rightClickItem)"
-      @deleteCurrentFile="deleteCurrentFile('current', rightClickItem)"
-      @shareCurrentFile="shareCurrentFile(rightClickItem)"
-      @showAttribute="
+        :menuType="rightClickMenuType == 'collect' ? 'collect' : 'file'"
+        :isMenuShow="isMenuShow"
+        :menuTop="menuTop"
+        :menuLeft="menuLeft"
+        :isCurrentFileCollected="isCurrentFileCollected"
+        @rename="rename"
+        @collectCurrentFile="collectCurrentFile"
+        @openCurrentFile="openCurrentFile(rightClickItem)"
+        @downloadCurrentFile="downloadCurrentFile('current', rightClickItem)"
+        @deleteCurrentFile="deleteCurrentFile('current', rightClickItem)"
+        @shareCurrentFile="shareCurrentFile(rightClickItem)"
+        @showAttribute="
         () => {
           isAttributeShow = true;
           this.$nextTick(() => {
@@ -261,54 +251,52 @@
           });
         }
       "
-      @moveFile="moveFile"
-    ></right-click-menu>
+        @moveFile="moveFile"></right-click-menu>
 
     <!-- 文件夹右击菜单框组件 -->
     <right-click-menu
-      :menuType="'folder'"
-      :isFolderMenuShow="isFolderMenuShow"
-      :menuTop="menuTop"
-      :menuLeft="menuLeft"
-      @openCurrentFolder="openCurrentFolder(rightClickFolderItem)"
-      @renameCurrentFolder="rename('folder')"
-      @deleteCurrentFolder="deleteCurrentFolder(rightClickFolderItem)"
-    ></right-click-menu>
+        :menuType="'folder'"
+        :isFolderMenuShow="isFolderMenuShow"
+        :menuTop="menuTop"
+        :menuLeft="menuLeft"
+        @openCurrentFolder="openCurrentFolder(rightClickFolderItem)"
+        @renameCurrentFolder="rename('folder')"
+        @deleteCurrentFolder="deleteCurrentFolder(rightClickFolderItem)"></right-click-menu>
 
     <!-- 图片预览组件 -->
     <image-player
-      :currentImg="currentImg"
-      :isImgDialogShow="isImgDialogShow"
-      @collectCurrentImg="
+        :currentImg="currentImg"
+        :isImgDialogShow="isImgDialogShow"
+        @collectCurrentImg="
         (info) => this.collectCurrentFile(info.flag, 'player', info.item)
       "
-      @closeDialog="isImgDialogShow = false"
-      @shareCurrentFile="shareCurrentFile"
+        @closeDialog="isImgDialogShow = false"
+        @shareCurrentFile="shareCurrentFile"
     ></image-player>
 
     <!-- 属性框组件 -->
     <attribute
-      v-if="isAttributeShow"
-      :fileId="rightClickItem.id"
-      :attributeTop="attributeTop"
-      :attributeLeft="attributeLeft"
-      @closeAttribute="isAttributeShow = false"
-      ref="attributeDialog"
+        v-if="isAttributeShow"
+        :fileId="rightClickItem.id"
+        :attributeTop="attributeTop"
+        :attributeLeft="attributeLeft"
+        @closeAttribute="isAttributeShow = false"
+        ref="attributeDialog"
     ></attribute>
 
     <!-- 移动到中选择文件夹的dialog -->
     <folder-dialog
-      :isFolderDialogShow="isFolderDialogShow"
-      :folderList="folderList"
-      :moveType="moveType"
-      @confirmMove="(info) => confirmMove(info.path, info.type)"
-      @closeFolderDialog="isFolderDialogShow = false"
+        :isFolderDialogShow="isFolderDialogShow"
+        :folderList="folderList"
+        :moveType="moveType"
+        @confirmMove="(info) => confirmMove(info.path, info.type)"
+        @closeFolderDialog="isFolderDialogShow = false"
     ></folder-dialog>
 
     <!-- 搜索为空的提醒 -->
     <div
-      class="searchTips"
-      v-if="
+        class="searchTips"
+        v-if="
         $route.params.path &&
         $route.params.path.search('search') != -1 &&
         searchFolder.length == 0 &&
@@ -321,9 +309,9 @@
     <go-top scrollObj=".iconTypeListContainer"></go-top>
     <!-- 拖动时的预览容器 -->
     <div
-      class="dragImgContainer"
-      :class="showDragImgContainer ? 'showDragImgContainer' : ''"
-      :style="[
+        class="dragImgContainer"
+        :class="showDragImgContainer ? 'showDragImgContainer' : ''"
+        :style="[
         { top: dragImgContainerPosition.y + 'px' },
         { left: dragImgContainerPosition.x + 'px' },
       ]"
@@ -331,9 +319,9 @@
 
     <!-- 分享框 -->
     <share-dialog
-      :isShareDialogShow="isShareDialogShow"
-      :shareItem="shareItem"
-      @closeDialog="isShareDialogShow = false"
+        :isShareDialogShow="isShareDialogShow"
+        :shareItem="shareItem"
+        @closeDialog="isShareDialogShow = false"
     ></share-dialog>
   </div>
 </template>
@@ -341,7 +329,7 @@
 <script>
 let isClickSelectAll = true;
 
-import { getTypeIcon } from "plugins/utils.js";
+import {getTypeIcon} from "plugins/utils.js";
 
 import Attribute from "components/attribute/Attribute.vue";
 import ImagePlayer from "components/imagePlayer/ImagePlayer.vue";
@@ -368,12 +356,17 @@ export default {
       menuLeft: 0,
       cardoffsetTop: 0,
       cardoffsetLeft: 0,
+
+
       // 重命名输入框
       renameInput: "",
+
+
       // 是否显示重命名输入框
       isRenameShow: false,
       // 右击的item
       rightClickItem: {},
+
       // 新建文件夹名称
       createdName: "",
       isCreateFolderShow: false,
@@ -471,8 +464,11 @@ export default {
     selectCurrentItem(item) {
       // 操作dom  直接操作dom可以减少循环，提高性能
       // let listItem = document.querySelectorAll(".listItem");
+
       // 先判断该选项是否已经被选中
-      let i = this.selectFiles.findIndex((item1) => item1.id == item.id);
+      let i = this.selectFiles.findIndex((item1) => item1.id == item.fileId);
+      console.log("selectFiles:", this.selectFiles);
+
       if (i == -1) {
         this.selectFiles.push(item);
       } else {
@@ -525,19 +521,19 @@ export default {
       // files的菜单高度和collect不一样
       if (this.rightClickMenuType == "files") {
         this.menuTop =
-          e.pageY + 250 > this.pageHeight ? this.pageHeight - 250 : e.pageY;
+            e.pageY + 250 > this.pageHeight ? this.pageHeight - 250 : e.pageY;
       } else {
         this.menuTop =
-          e.pageY + 220 > this.pageHeight ? this.pageHeight - 220 : e.pageY;
+            e.pageY + 220 > this.pageHeight ? this.pageHeight - 220 : e.pageY;
       }
       this.menuLeft =
-        e.pageX + 140 > this.pageWidth ? this.pageWidth - 140 : e.pageX;
+          e.pageX + 140 > this.pageWidth ? this.pageWidth - 140 : e.pageX;
 
       // 计算属性dialog的位置
       this.attributeTop =
-        e.pageY + 230 > this.pageHeight ? this.pageHeight - 230 : e.pageY;
+          e.pageY + 230 > this.pageHeight ? this.pageHeight - 230 : e.pageY;
       this.attributeLeft =
-        e.pageX + 340 > this.pageWidth ? this.pageWidth - 340 : e.pageX;
+          e.pageX + 340 > this.pageWidth ? this.pageWidth - 340 : e.pageX;
 
       if (!type || type == "menu") {
         // 判断右击文件是否已收藏
@@ -558,18 +554,24 @@ export default {
     rename(type) {
       // 获取点击重命名的索引
       // this.rightClickItem = this.$store.state.rightClickItem;
+
       if (!type) {
         // 文件
         this.isRenameShow = true;
-        this.renameInput = this.rightClickItem.name;
+        this.renameInput = this.rightClickItem.fileName;
+        console.log("this.rightClickItem", this.rightClickItem)
+
+
       } else if (type == "folder") {
         // 文件夹
         this.isFolderRenameInputShow = true;
         this.renameInput = this.rightClickFolderItem.name.slice(
-          0,
-          this.rightClickFolderItem.name.length - 1
+            0,
+            this.rightClickFolderItem.name.length - 1
         );
       }
+
+
       //在input的属性中添加autofocus只能触发一次 这里改用操作DOM
       this.$nextTick(() => {
         if (this.$store.state.showType == "icon") {
@@ -581,9 +583,9 @@ export default {
       //   console.log(this.rightClickIndex, 123456);
     },
 
+
     // 重命名完成后的回调  失去焦点或者回车
     async renameDone(item, index, type) {
-      console.log(item);
       // 判断输入内容是否为空
       if (this.renameInput.trim().length == 0) {
         if (!type) {
@@ -594,6 +596,7 @@ export default {
           this.isFolderRenameInputShow = false;
         }
       }
+
 
       // 先判断rightClickIndex是否被重置为-1 被重置为-1说明已经调用过此函数（enter和blur会冲突，导致调用两次此函数）
       // 已经在html中调用方法时判断了
@@ -606,19 +609,19 @@ export default {
         if (this.rightClickItem.name != this.renameInput.trim()) {
           // 发送请求给服务器
           let res = await this.$request(
-            "/educenter/file/updateFile",
-            {
-              id: item.id,
-              name: this.renameInput.trim(),
-            },
-            "post"
-          );
-          console.log(res);
-          if (res.data.success) {
-            // 通知父组件重新请求服务器数据 重新渲染此组件
-            // 这里直接修改数据，避免出现刷新 影响用户体验
-            this.listData[index].name = this.renameInput.trim();
-          } else {
+              "/file/rename",
+              JSON.stringify({
+                fileId: item.fileId,
+                fileName: this.renameInput.trim(),
+              }),
+              "POST","json");
+
+
+          console.log("重命名结果：",res);
+          // 通知父组件重新请求服务器数据 重新渲染此组件
+          // 这里直接修改数据，避免出现刷新 影响用户体验
+          this.listData[index].name = this.renameInput.trim();
+          if (!res.data.success) {
             this.$message.error("重命名失败,请稍后重试!");
           }
         }
@@ -630,24 +633,24 @@ export default {
         if (this.rightClickFolderItem.name != this.renameInput.trim()) {
           // 计算当前文件夹的路径
           let url = (
-            "/" +
-            this.findPathByLeafId(this.rightClickFolderItem.name, [
-              this.folderList,
-            ]).join("")
+              "/" +
+              this.findPathByLeafId(this.rightClickFolderItem.name, [
+                this.folderList,
+              ]).join("")
           ).slice(
-            0,
-            this.findPathByLeafId(this.rightClickFolderItem.name, [
-              this.folderList,
-            ]).join("").length
+              0,
+              this.findPathByLeafId(this.rightClickFolderItem.name, [
+                this.folderList,
+              ]).join("").length
           );
           let res = await this.$request(
-            `/educenter/dir/updateDirStruct/${this.$store.state.userInfo.id}/${
-              this.renameInput.trim() + "/"
-            }/${this.rightClickFolderItem.id}`,
-            url,
-            "post",
-            "params",
-            "json"
+              `/educenter/dir/updateDirStruct/${this.$store.state.userInfo.id}/${
+                  this.renameInput.trim() + "/"
+              }/${this.rightClickFolderItem.id}`,
+              url,
+              "post",
+              "params",
+              "json"
           );
           console.log(res);
           if (res.data.success) {
@@ -664,6 +667,7 @@ export default {
       this.renameInput = "";
       // }
     },
+
 
     // 新建文件夹命名完成的回调
     createNameDone() {
@@ -682,9 +686,9 @@ export default {
           } else {
             // 发送请求给服务器
             let res = await this.$request(
-              `/educenter/dir/setUserDir/${this.$store.state.userInfo.id}/${this.createdName}/${this.currentFolderId}`,
-              "",
-              "post"
+                `/educenter/dir/setUserDir/${this.$store.state.userInfo.id}/${this.createdName}/${this.currentFolderId}`,
+                "",
+                "post"
             );
             console.log(res);
             //   重新加载组件
@@ -738,9 +742,9 @@ export default {
         });
       }
       res = await this.$request(
-        `/eduoss/fileoss/removeAlyVideo/${this.$store.state.userInfo.id}?idList=${arr}`,
-        "",
-        "delete"
+          `/eduoss/fileoss/removeAlyVideo/${this.$store.state.userInfo.id}?idList=${arr}`,
+          "",
+          "delete"
       );
       // console.log(res);
       // 删除成功后重新获取列表
@@ -749,12 +753,12 @@ export default {
       if (res.data.success) {
         if (type == "current") {
           let index = this.listData.findIndex(
-            (item) => item.id == this.rightClickItem.id
+              (item) => item.id == this.rightClickItem.id
           );
           this.listData.splice(index, 1);
           // 再判断一下被删除的item是否被多选了 如果被多选了，还需要再删除多选数组中的item
           let idx = this.selectFiles.findIndex(
-            (item) => item.id == this.rightClickItem.id
+              (item) => item.id == this.rightClickItem.id
           );
           if (idx != -1) {
             this.selectFiles.splice(idx, 1);
@@ -799,9 +803,9 @@ export default {
         }
         if (nodes[i].childrenList) {
           var findResult = this.findPathByLeafId(
-            leafId,
-            nodes[i].childrenList,
-            tmpPath
+              leafId,
+              nodes[i].childrenList,
+              tmpPath
           );
           if (findResult) {
             return findResult;
@@ -813,53 +817,36 @@ export default {
     // 打开当前双击的文件夹
     // 点击的是folderList中第 index个子目录
     openCurrentFolder(item) {
+      console.log("双击打开文件夹", item);
       console.log(this.folderList);
-      let currentFolder = (
-        "/" + this.findPathByLeafId(item.name, [this.folderList]).join("")
-      ).slice(
-        0,
-        this.findPathByLeafId(item.name, [this.folderList]).join("").length
-      );
-      // let currentFolder =
-      //   this.$route.params.path +
-      //   "/" +
-      //   item.name.substr(0, item.name.length - 1);
-      // console.log(currentFolder);
-      // // 在vuex中更新当前目录
-      // this.$store.commit("updateCurrentFolder", currentFolder);
-      this.$router.push({ name: "files", params: { path: currentFolder } });
+
+      // 修改vuex中的当前文件夹id
+      this.$store.commit("updateCurrentFolderId", item.id);
+
+      //修改vuex中的历史栈信息
+      this.$store.commit("updateHistoryStackInfo", {id: item.id, name: item.name.substring(0, item.name.length - 1)})
     },
 
     // 判断当前所在的文件夹位置
     getCurrentLocation() {
       if (this.$route.params.path.search("search") != -1) return;
-      console.log(612);
+
       let currentFolder = this.$route.params.path;
       currentFolder = currentFolder.slice(1, currentFolder.length);
+
+
       let arr = currentFolder.split("/");
-      console.log(arr);
-      // 如果是/search就不计算当前位置了
-      // if (arr[arr.length - 1] == "search") {
-      //   return;
-      // }
-      // console.log(arr);
+
       this.currentChildrenFolder = this.folderList.childrenList;
-      console.log(this.folderList);
+
       if (arr.length > 1) {
         // 说明不在根目录
         for (var i = 1; i < arr.length; i++) {
-          let index = this.currentChildrenFolder.findIndex(
-            (item) => item.name.substr(0, item.name.length - 1) == arr[i]
-          );
-          this.currentFolderId = this.currentChildrenFolder[index].id;
-          this.currentChildrenFolder =
-            this.currentChildrenFolder[index].childrenList;
-          // console.log(482, this.currentChildrenFolder[index]);
-          // console.log(this.currentChildrenFolder);
+          this.currentFolderId = this.$store.state.currentFolderId;
         }
-        // console.log("currentFolderId", this.currentFolderId);
+
+
       } else {
-        // console.log(348, this.currentChildrenFolder);
         this.currentFolderId = 1;
       }
     },
@@ -881,9 +868,9 @@ export default {
             console.log(i);
             // 请求url
             let res = await this.$request(
-              "/eduoss/fileoss/getPlayAuth?isList=" + i.videoId,
-              "",
-              "post"
+                "/eduoss/fileoss/getPlayAuth?isList=" + i.videoId,
+                "",
+                "post"
             );
             console.log(res);
             url = res.data.data.urlList[0].url;
@@ -926,9 +913,9 @@ export default {
       //  发送请求
       if (collect) {
         let res = await this.$request(
-          `/educenter/file/collectFile?id=${ids}`,
-          "",
-          "post"
+            `/educenter/file/collectFile?id=${ids}`,
+            "",
+            "post"
         );
         console.log(res);
 
@@ -955,9 +942,9 @@ export default {
         }
       } else {
         let res = await this.$request(
-          `/educenter/file/cancelCollection?id=${ids}`,
-          "",
-          "post"
+            `/educenter/file/cancelCollection?id=${ids}`,
+            "",
+            "post"
         );
         console.log(res);
 
@@ -999,11 +986,11 @@ export default {
         list.forEach((item) => arr.push(item.id));
       }
       let res = await this.$request(
-        `/educenter/file/fileMove?id=${arr}`,
-        path,
-        "post",
-        "params",
-        "json"
+          `/educenter/file/fileMove?id=${arr}`,
+          path,
+          "post",
+          "params",
+          "json"
       );
       console.log(res);
       if (res.data.success) {
@@ -1012,12 +999,12 @@ export default {
         // this.$emit("getListData");
         if (!type || type == "current") {
           let index = this.listData.findIndex(
-            (item) => item.id == this.rightClickItem.id
+              (item) => item.id == this.rightClickItem.id
           );
           this.listData.splice(index, 1);
           // 再判断一下被删除的item是否被多选了
           let idx = this.selectFiles.findIndex(
-            (item) => item.id == this.rightClickItem.id
+              (item) => item.id == this.rightClickItem.id
           );
           if (idx != -1) {
             this.selectFiles.splice(idx, 1);
@@ -1061,13 +1048,13 @@ export default {
     async deleteCurrentFolder(item) {
       // console.log(item);
       let res = await this.$request(
-        `/educenter/dir/deleteDirStruct/${this.$store.state.userInfo.id}/${item.id}`,
-        this.$store.state.currentFolder +
+          `/educenter/dir/deleteDirStruct/${this.$store.state.userInfo.id}/${item.id}`,
+          this.$store.state.currentFolder +
           "/" +
           item.name.substr(0, item.name.length - 1),
-        "post",
-        "params",
-        "json"
+          "post",
+          "params",
+          "json"
       );
       // console.log(res);
       if (res.data.success) {
@@ -1125,8 +1112,8 @@ export default {
               } else {
                 let typeIcon = getTypeIcon(i.filetype);
                 img.setAttribute(
-                  "src",
-                  require(`/src/assets/img/${typeIcon}.png`)
+                    "src",
+                    require(`/src/assets/img/${typeIcon}.png`)
                 );
               }
               imgContainer.appendChild(img);
@@ -1183,15 +1170,17 @@ export default {
       console.log(item);
       // 获得文件夹的完整路径
       let currentFolder = (
-        "/" + this.findPathByLeafId(item.name, [this.folderList]).join("")
+          "/" + this.findPathByLeafId(item.name, [this.folderList]).join("")
       ).slice(
-        0,
-        this.findPathByLeafId(item.name, [this.folderList]).join("").length
+          0,
+          this.findPathByLeafId(item.name, [this.folderList]).join("").length
       );
       // console.log(currentFolder);
       this.confirmMove(currentFolder, "drag", this.dragItemList);
       this.dragItemList = [];
     },
+
+
   },
   computed: {
     computeType() {
@@ -1234,15 +1223,16 @@ export default {
         }
       }
     },
+
+
     folderList(current) {
       this.getCurrentLocation();
-      console.log("885---------------------");
     },
 
     // 监听选中文件的变化
-    selectFiles(current) {
-      this.$store.commit("updateSelectFiles", current);
-    },
+    /*    selectFiles(current) {
+          this.$store.commit("updateSelectFiles", current);
+        },*/
 
     // 监听是否正在获取文件夹
     "$store.state.isGetingFolder"(current) {
@@ -1268,7 +1258,8 @@ export default {
       this.currentChildrenFolder = current;
     },
   },
-  created() {},
+  created() {
+  },
   mounted() {
     // 获取组件的offset
     let Card = document.querySelector(".iconTypeListContainer");

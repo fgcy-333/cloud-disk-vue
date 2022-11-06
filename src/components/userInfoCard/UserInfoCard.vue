@@ -16,7 +16,9 @@
       <img :src="userInfo.avatar" alt="" v-if="userInfo.avatar" />
       <img src="~assets/img/avatar.png" alt="" v-else />
     </div>
-    <div class="userName">{{ userInfo.nickname }}</div>
+
+    <div class="userName">{{ userInfo.name }}</div>
+
     <div class="menuContainer">
       <div
         class="menu"
@@ -72,7 +74,9 @@
       width="500px"
       class="aboutDialog"
     >
-      本项目是和班里几位同学联合开发的网盘项目。该项目实现了文件的上传，下载，文件的增删改查，文件夹，拖动，相册，收藏，图片、视频、音频在线预览等功能。在这个项目中，我负责的是网页端的开发，也就是当前demo所展示的，主要用到的技术栈是vue全家桶。同时这个项目也有移动端，主要的技术栈是uni-app。后端的技术栈是springboot+mybatiesplus。
+      本项目是和班里几位同学联合开发的网盘项目。该项目实现了文件的上传，下载，文件的增删改查，文件夹，拖动，相册，收藏，图片、视频、音频在线预览等功能。
+      在这个项目中，我负责的是网页端的开发，也就是当前demo所展示的，主要用到的技术栈是vue全家桶。
+      同时这个项目也有移动端，主要的技术栈是uni-app。后端的技术栈是springboot+mybatiesplus。
     </el-dialog>
   </div>
 </template>
@@ -110,12 +114,14 @@ export default {
 
     // 请求用户信息
     async getUserInfo() {
-      let res = await this.$request(
+     this.userInfo= window.localStorage.getItem("userInfo");
+     // console.log("$$$$$",this.userInfo)
+/*      let res = await this.$request(
         `/educenter/member/getMemberInfo/${this.$store.state.userInfo.id}`
-      );
+      );*/
       // console.log(res);
-      this.userInfo = res.data.data.member;
-      this.$store.commit("updateUserInfo", this.userInfo);
+/*      this.userInfo = res.data.data.member;
+      this.$store.commit("updateUserInfo", this.userInfo);*/
     },
 
     // 上传成功的钩子

@@ -2,33 +2,33 @@
   <div class="login">
     <div class="main">
       <div class="logoContainer">
-        <div class="logo"><img src="~assets/img/logo.png" alt="" /></div>
+        <div class="logo"><img src="~assets/img/logo.png" alt=""/></div>
         <div class="name">小破盘</div>
       </div>
       <div
-        class="mainBox"
-        :class="activeName == 'first' ? '' : 'mainBoxRegistered'"
+          class="mainBox"
+          :class="activeName == 'first' ? '' : 'mainBoxRegistered'"
       >
         <el-tabs
-          v-model="activeName"
-          type="card"
-          @tab-click="handleClick"
-          stretch
+            v-model="activeName"
+            type="card"
+            @tab-click="handleClick"
+            stretch
         >
           <el-tab-pane label="登录" name="first">
             <div class="loginInput">
               <el-form ref="form" :model="login" label-width="80px">
                 <el-form-item>
                   <el-input
-                    v-model="login.mobile"
-                    placeholder="请输入手机号码"
+                      v-model="login.mobile"
+                      placeholder="请输入手机号码"
                   ></el-input>
                 </el-form-item>
                 <el-form-item>
                   <el-input
-                    v-model="login.password"
-                    type="password"
-                    placeholder="请输入密码"
+                      v-model="login.password"
+                      type="password"
+                      placeholder="请输入密码"
                   ></el-input>
                 </el-form-item>
                 <el-form-item>
@@ -42,42 +42,44 @@
               <el-form ref="form" :model="login" label-width="80px">
                 <el-form-item>
                   <el-input
-                    v-model="registered.mobile"
-                    placeholder="请输入手机号码"
+                      v-model="registered.mobile"
+                      placeholder="请输入手机号码"
                   ></el-input>
                 </el-form-item>
                 <el-form-item>
                   <el-input
-                    v-model="registered.password"
-                    placeholder="请输入密码"
-                    type="password"
+                      v-model="registered.password"
+                      placeholder="请输入密码"
+                      type="password"
                   ></el-input>
                 </el-form-item>
                 <el-form-item>
                   <el-input
-                    v-model="registered.nickname"
-                    placeholder="请输入昵称"
+                      v-model="registered.nickname"
+                      placeholder="请输入昵称"
                   ></el-input>
                 </el-form-item>
                 <el-form-item class="codeContainer">
                   <el-input
-                    v-model="registered.code"
-                    placeholder="请输入验证码"
+                      v-model="registered.code"
+                      placeholder="请输入验证码"
                   ></el-input>
                   <div class="codeButtonContainer">
                     <el-button
-                      size="mini"
-                      class="getcode"
-                      v-if="!isCountDownShow"
-                      @click="getCode"
-                      >获取验证码</el-button
+                        size="mini"
+                        class="getcode"
+                        v-if="!isCountDownShow"
+                        @click="getCode"
+                    >获取验证码
+                    </el-button
                     >
                     <div class="countDown" v-else>{{ countDownSecond }} s</div>
                   </div>
                 </el-form-item>
                 <el-form-item>
                   <el-button type="primary" @click="clickRegistered"
-                    >注册</el-button
+                  >注册
+                  </el-button
                   >
                 </el-form-item>
               </el-form>
@@ -119,11 +121,12 @@ export default {
     //   点击登录的回调
     async onSubmit() {
       let res = await this.$request(
-        "/educenter/member/login",
-        this.login,
-        "post",
-        "params"
+          "/login",
+          this.login,
+          "get",
+          "params"
       );
+
       console.log(res);
       if (res.status == 200 && res.data.success) {
         // 登陆成功
@@ -131,9 +134,12 @@ export default {
         this.$store.commit("updateUserInfo", res.data.data.mem);
 
         // 将返回的用户信息保存至localstorage中
-        window.localStorage.setItem(
-          "userInfo",
-          JSON.stringify(res.data.data.mem)
+        window.localStorage.setItem("userInfo",
+            JSON.stringify({
+              name: res.data.data.name,
+              avatar: res.data.data.avatar,
+              rootFolderId: res.data.data.rootFolderId
+            })
         );
 
         // 将token存入本地
@@ -141,6 +147,7 @@ export default {
 
         //   跳转至主界面
         this.$router.push("/index");
+
       } else if (res.status == 200 && !res.data.success) {
         this.$message.warning("登录失败,账号或密码错误!");
       }
@@ -154,7 +161,7 @@ export default {
     async getCode() {
       this.isCountDownShow = true;
       let res = await this.$request(
-        `/edumsm/msm/send/${this.registered.mobile}`
+          `/edumsm/msm/send/${this.registered.mobile}`
       );
       console.log(res);
       if (res.data.success) {
@@ -176,10 +183,10 @@ export default {
     // 点击注册的回调
     async clickRegistered() {
       let res = await this.$request(
-        "/educenter/member/register",
-        this.registered,
-        "post",
-        "params"
+          "/educenter/member/register",
+          this.registered,
+          "post",
+          "params"
       );
       console.log(res);
       // 如果注册成功，清空所有数据并跳转至登录界面，自动填写手机号码

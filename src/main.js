@@ -12,7 +12,14 @@ Vue.prototype.$request = request;
 // 导入全局css
 import 'assets/css/base.css'
 
+import { Loading } from 'element-ui';
+
 Vue.config.productionTip = false
+
+
+
+Vue.use(Loading.directive);
+
 
 new Vue({
   router,

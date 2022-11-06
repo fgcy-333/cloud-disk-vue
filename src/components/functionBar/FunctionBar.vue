@@ -3,37 +3,40 @@
     <div class="FunctionBar">
       <div class="left">
         <el-upload
-          multiple
-          :action="`/api/eduoss/fileoss/upload/${$store.state.userInfo.id}?catalogue=${$store.state.currentFolder}`"
-          class="uploadButton"
-          :show-file-list="false"
-          :on-success="upload"
-          :on-error="onError"
-          :on-progress="onProgress"
-          :before-upload="beforeUpload"
-          v-if="barType == 'file' && $route.params.path.search('search') == -1"
+            multiple
+            :action="`/api/eduoss/fileoss/upload/${$store.state.userInfo.id}?catalogue=${$store.state.currentFolder}`"
+            class="uploadButton"
+            :show-file-list="false"
+            :on-success="upload"
+            :on-error="onError"
+            :on-progress="onProgress"
+            :before-upload="beforeUpload"
+            v-if="barType == 'file' && $route.params.path.search('search') == -1"
         >
           <el-button type="primary" size="small" class="upload">
-            <i class="iconfont icon-yunshangchuan"></i> 上传</el-button
+            <i class="iconfont icon-yunshangchuan"></i> 上传
+          </el-button
           >
         </el-upload>
         <el-button
-          v-if="barType == 'file' && $route.params.path.search('search') == -1"
-          size="small"
-          class="create"
-          @click="createFolder"
-          :disabled="!isCreateAble"
+            v-if="barType == 'file' && $route.params.path.search('search') == -1"
+            size="small"
+            class="create"
+            @click="createFolder"
+            :disabled="!isCreateAble"
         >
-          <i class="iconfont icon-add"></i> 新建</el-button
+          <i class="iconfont icon-add"></i> 新建
+        </el-button
         >
         <el-button
-          size="small"
-          class="selectAll"
-          :class="isSelectAll ? 'select' : ''"
-          @click="selectAll"
+            size="small"
+            class="selectAll"
+            :class="isSelectAll ? 'select' : ''"
+            @click="selectAll"
         >
           <i class="iconfont icon-complete"></i>
-          全选</el-button
+          全选
+        </el-button
         >
         <!-- 多选操作按钮 -->
         <div class="multButtons" v-if="isMultBtnsShow">
@@ -43,8 +46,8 @@
               <i class="iconfont icon-bottom"></i> 下载
             </div>
             <div
-              @click="$emit('multCollect', true)"
-              v-if="!$store.state.isAllFileCollect"
+                @click="$emit('multCollect', true)"
+                v-if="!$store.state.isAllFileCollect"
             >
               <i class="iconfont icon-favorite"></i> 收藏
             </div>
@@ -66,32 +69,32 @@
       <div class="right">
         <div class="search">
           <el-input
-            placeholder="请输入内容"
-            suffix-icon="el-icon-search"
-            v-model="searchContent"
-            @keyup.native.enter="$emit('goSearch', searchContent)"
+              placeholder="请输入内容"
+              suffix-icon="el-icon-search"
+              v-model="searchContent"
+              @keyup.native.enter="$emit('goSearch', searchContent)"
           >
           </el-input>
         </div>
         <div class="sortType">
           <el-popover width="150" trigger="hover" :visible-arrow="false">
             <div
-              class="sortTypeItem"
-              @click="$store.commit('updateSortType', 'time')"
+                class="sortTypeItem"
+                @click="$store.commit('updateSortType', 'time')"
             >
               <i
-                class="iconfont icon-select"
-                v-show="$store.state.sortType == 'time'"
+                  class="iconfont icon-select"
+                  v-show="$store.state.sortType == 'time'"
               ></i>
               按修改时间排序
             </div>
             <div
-              class="sortTypeItem"
-              @click="$store.commit('updateSortType', 'size')"
+                class="sortTypeItem"
+                @click="$store.commit('updateSortType', 'size')"
             >
               <i
-                class="iconfont icon-select"
-                v-show="$store.state.sortType == 'size'"
+                  class="iconfont icon-select"
+                  v-show="$store.state.sortType == 'size'"
               ></i>
               按文件大小排序
             </div>
@@ -100,8 +103,8 @@
         </div>
         <div class="displayType" @click="changeShowType">
           <i
-            class="iconfont icon-paixu1"
-            v-if="$store.state.showType == 'icon'"
+              class="iconfont icon-paixu1"
+              v-if="$store.state.showType == 'icon'"
           ></i>
           <i class="iconfont icon-sifangge" v-else></i>
         </div>
@@ -113,17 +116,14 @@
         :uploadProgress="uploadProgress"
       ></progress-dialog> -->
       <div
-        class="goLastFolder"
-        v-if="$route.params.path != '/root' && barType == 'file'"
-      >
+          class="goLastFolder"
+          v-if="$store.state.historyStackPoint>0">
         <a @click.prevent="goLastFolder">返回上一级</a>
-        |
-        <a
-          @click.prevent="
-            $router.push({ name: 'files', params: { path: '/root' } })
-          "
-          >返回根目录</a
-        >
+        <span v-for="item in pathArr" :key="item">
+        <span v-show="item!=='全部文件'"> ></span>
+         <a @click.prevent="turnToOther(item)">{{ item }}</a>
+        </span>
+
       </div>
     </div>
     <div class="tableHead" v-if="$store.state.showType == 'table'">
@@ -137,6 +137,7 @@
 
 <script>
 import ProgressDialog from "../progressDialog/ProgressDialog.vue";
+
 export default {
   name: "FunctionBar",
   components: {
@@ -164,7 +165,39 @@ export default {
       searchContent: "",
     };
   },
+  computed: {
+    pathArr() {
+      let historyStack = this.$store.state.historyStack;
+      let arr = [];
+      historyStack.forEach(obj => {
+        if (obj.name === 'root') {
+          arr.push("全部文件");
+        } else {
+          arr.push(obj.name)
+        }
+      });
+      return arr;
+    }
+  },
   methods: {
+    turnToOther(item) {
+      let index = 0;
+      for (let i = 0; i < this.pathArr.length; i++) {
+        if (this.pathArr[i] === item) {
+          index = i;
+        }
+      }
+      console.log("####", this.pathArr)
+
+      //历史返回
+      this.$store.commit("backHistoryStack", index);
+      //获取上一级历史栈的信息
+      let historyStack = this.$store.state.historyStack[index];
+      //更新全局当前文件夹id
+      this.$store.commit("updateCurrentFolderId", historyStack.id)
+
+    },
+
     selectAll() {
       this.isSelectAll = !this.isSelectAll;
       this.$store.commit("updateIsSelectAll", this.isSelectAll);
@@ -201,10 +234,10 @@ export default {
       };
       // 调用此接口以通知后端将上传的文件存入数据库
       let res = await this.$request(
-        "/educenter/file/addFile",
-        data,
-        "post",
-        "params"
+          "/educenter/file/addFile",
+          data,
+          "post",
+          "params"
       );
       console.log(res);
       // this.isUploadProgressShow = false;
@@ -258,17 +291,20 @@ export default {
     beforeUpload(file) {
       console.log(file);
       let arr = this.$store.state.uploadProgressList;
-      arr.push({ name: file.name, progress: 0 });
+      arr.push({name: file.name, progress: 0});
       this.$store.commit("updateUploadProgressList", arr);
     },
 
     // 返回上一级文件夹
     goLastFolder() {
-      let arr = this.$route.params.path.split("/");
-      arr = arr.slice(0, arr.length - 1);
-      let path = arr.join("/");
-      console.log(path);
-      this.$router.push({ name: "files", params: { path: path } });
+      //当前历史栈的下标
+      let currentIndex = this.$store.state.historyStackPoint;
+      //历史返回
+      this.$store.commit("backHistoryStack", currentIndex - 1);
+      //获取上一级历史栈的信息
+      let historyStack = this.$store.state.historyStack[currentIndex - 1];
+      //更新全局当前文件夹id
+      this.$store.commit("updateCurrentFolderId", historyStack.id)
     },
 
     // 点击切换展示类型
@@ -307,12 +343,12 @@ export default {
     // 每次进入时先重置vuex中的isSelectAll
     this.$store.commit("updateIsSelectAll", false);
     if (
-      this.barType == "file" &&
-      this.$route.params.path.search("search") != -1
+        this.barType == "file" &&
+        this.$route.params.path.search("search") != -1
     ) {
       this.searchContent = this.$route.params.path
-        .split("/")
-        [this.$route.params.path.split("/").length - 1].split("?")[1];
+          .split("/")
+          [this.$route.params.path.split("/").length - 1].split("?")[1];
     }
   },
 };
@@ -472,6 +508,7 @@ i {
   line-height: 43px;
   width: 50%;
 }
+
 .tableHeadName {
   width: calc(50% + 43px);
   padding: 0;
