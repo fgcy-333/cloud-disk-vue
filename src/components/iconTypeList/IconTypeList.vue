@@ -614,50 +614,37 @@ export default {
                 fileId: item.fileId,
                 fileName: this.renameInput.trim(),
               }),
-              "POST","json");
+              "POST", "json");
 
-
-          console.log("重命名结果：",res);
-          // 通知父组件重新请求服务器数据 重新渲染此组件
           // 这里直接修改数据，避免出现刷新 影响用户体验
-          this.listData[index].name = this.renameInput.trim();
-          if (!res.data.success) {
+          this.listData[index].fileName = this.renameInput.trim();
+
+          if (!res.success) {
             this.$message.error("重命名失败,请稍后重试!");
           }
+
         }
         this.rightClickItem = {};
         this.isRenameShow = false;
       } else {
         // 文件夹
-        console.log(this.renameInput);
+        console.log("rightClickFolderItem", this.rightClickFolderItem);
         if (this.rightClickFolderItem.name != this.renameInput.trim()) {
-          // 计算当前文件夹的路径
-          let url = (
-              "/" +
-              this.findPathByLeafId(this.rightClickFolderItem.name, [
-                this.folderList,
-              ]).join("")
-          ).slice(
-              0,
-              this.findPathByLeafId(this.rightClickFolderItem.name, [
-                this.folderList,
-              ]).join("").length
-          );
+
           let res = await this.$request(
-              `/educenter/dir/updateDirStruct/${this.$store.state.userInfo.id}/${
-                  this.renameInput.trim() + "/"
-              }/${this.rightClickFolderItem.id}`,
-              url,
-              "post",
-              "params",
+              "/folder/rename",
+              JSON.stringify({
+                folderId: this.rightClickFolderItem.id,
+                fileFolderName: this.rightClickFolderItem.name
+              }),
               "json"
           );
           console.log(res);
-          if (res.data.success) {
-            this.rightClickFolderItem.name = this.renameInput.trim() + "/";
-          } else {
+          this.rightClickFolderItem.name = this.renameInput.trim() + "/";
+          if (!res.success) {
             this.$message.error("重命名失败,请稍后重试!");
           }
+
         }
         this.rightClickFolderItem = {};
         this.isFolderRenameInputShow = false;
@@ -686,17 +673,22 @@ export default {
           } else {
             // 发送请求给服务器
             let res = await this.$request(
-                `/educenter/dir/setUserDir/${this.$store.state.userInfo.id}/${this.createdName}/${this.currentFolderId}`,
-                "",
-                "post"
+                "/folder/newfolder",
+                JSON.stringify({
+                  parentFolderId: this.$store.state.currentFolderId,
+                  fileFolderName: this.createdName,
+                  portalUserId: this.$store.state.userInfo.portalUserId
+                }),
+                "post",
+                "json"
             );
-            console.log(res);
+            console.log("新建文件夹：", res);
             //   重新加载组件
-            if (res.data.success) {
+            if (res.success) {
               this.$emit("getFolderList");
               this.$store.commit("updateIsGetingFolder", true);
             } else {
-              this.$message.error(res.data.message);
+              this.$message.error(res.msg);
               this.createdName = "";
               this.$store.commit("updateIsCreateFolder", false);
             }
@@ -817,11 +809,12 @@ export default {
     // 打开当前双击的文件夹
     // 点击的是folderList中第 index个子目录
     openCurrentFolder(item) {
+      // 修改vuex中的当前文件夹id
+      this.$store.commit("updateCurrentFolderId", item.id);
       console.log("双击打开文件夹", item);
       console.log(this.folderList);
 
-      // 修改vuex中的当前文件夹id
-      this.$store.commit("updateCurrentFolderId", item.id);
+
 
       //修改vuex中的历史栈信息
       this.$store.commit("updateHistoryStackInfo", {id: item.id, name: item.name.substring(0, item.name.length - 1)})

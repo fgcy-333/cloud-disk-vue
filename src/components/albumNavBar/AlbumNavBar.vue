@@ -16,8 +16,7 @@
             :on-success="upload"
             :on-error="onError"
             :on-progress="onProgress"
-            :before-upload="beforeUpload"
-          >
+            :before-upload="beforeUpload">
             <div class="add"><span>+</span></div>
           </el-upload>
         </div>

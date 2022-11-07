@@ -4,27 +4,26 @@
       <div class="left">
         <el-upload
             multiple
-            :action="`/api/eduoss/fileoss/upload/${$store.state.userInfo.id}?catalogue=${$store.state.currentFolder}`"
+            :action="`/disk/file/upload/${$store.state.currentFolderId}?userId=${$store.state.userInfo.portalUserId}`"
             class="uploadButton"
             :show-file-list="false"
             :on-success="upload"
             :on-error="onError"
             :on-progress="onProgress"
             :before-upload="beforeUpload"
-            v-if="barType == 'file' && $route.params.path.search('search') == -1"
-        >
+            v-if="barType == 'file' && $route.params.path.search('search') == -1">
           <el-button type="primary" size="small" class="upload">
             <i class="iconfont icon-yunshangchuan"></i> 上传
-          </el-button
-          >
+          </el-button>
         </el-upload>
+
+
         <el-button
             v-if="barType == 'file' && $route.params.path.search('search') == -1"
             size="small"
             class="create"
             @click="createFolder"
-            :disabled="!isCreateAble"
-        >
+            :disabled="!isCreateAble">
           <i class="iconfont icon-add"></i> 新建
         </el-button
         >
@@ -212,7 +211,7 @@ export default {
 
     // 上传成功的钩子
     async upload(response, file) {
-      console.log(response);
+      console.log("上传文件后回调：",response);
       if (!response.success) {
         this.$message.error("上传失败,请稍后重试!");
         // this.isUploadProgressShow = false;
@@ -222,39 +221,21 @@ export default {
         this.$store.commit("updateUploadProgressList", arr);
         return;
       }
-      let data = {
-        memId: this.$store.state.userInfo.id,
-        url: response.data.file.url,
-        name: response.data.file.name,
-        type: response.data.file.type,
-        videoId: response.data.file.videoId,
-        filetype: response.data.file.filetype,
-        fdir: response.data.file.fdir,
-        size: response.data.file.size,
-      };
-      // 调用此接口以通知后端将上传的文件存入数据库
-      let res = await this.$request(
-          "/educenter/file/addFile",
-          data,
-          "post",
-          "params"
-      );
-      console.log(res);
       // this.isUploadProgressShow = false;
       let arr = this.$store.state.uploadProgressList;
       let idx = arr.findIndex((item) => item.name == file.name);
       arr.splice(idx, 1);
       this.$store.commit("updateUploadProgressList", arr);
 
-      if (res.data.success) {
+      if (response.success) {
         this.$message.success("文件上传成功!");
-        // this.$emit("getListData");
-        this.$emit("pushUploadData", res.data.data.file);
+        this.$emit("flushData",0);
+        // this.$emit("pushUploadData", res.data.data.file);
 
         // 更新用户存储空间
-        let userInfo = this.$store.state.userInfo;
+      /*  let userInfo = this.$store.state.userInfo;
         userInfo.neicun += response.data.file.size;
-        this.$store.commit("updateUserInfo", userInfo);
+        this.$store.commit("updateUserInfo", userInfo);*/
       } else {
         this.$message.error("文件上传失败，请稍后重试!");
       }
@@ -288,6 +269,7 @@ export default {
     },
 
     // 文件上传之前的钩子
+    //给一手进度条
     beforeUpload(file) {
       console.log(file);
       let arr = this.$store.state.uploadProgressList;

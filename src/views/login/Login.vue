@@ -128,27 +128,28 @@ export default {
       );
 
       console.log(res);
-      if (res.status == 200 && res.data.success) {
+      if (res.success) {
         // 登陆成功
+
+        const info = JSON.stringify({
+          name: res.data.name,
+          avatar: res.data.avatar,
+          rootFolderId: res.data.rootFolderId,
+          portalUserId: res.data.portalUserId
+        })
         // 将用户信息保存至vuex
-        this.$store.commit("updateUserInfo", res.data.data.mem);
+        this.$store.commit("updateUserInfo", info);
 
         // 将返回的用户信息保存至localstorage中
-        window.localStorage.setItem("userInfo",
-            JSON.stringify({
-              name: res.data.data.name,
-              avatar: res.data.data.avatar,
-              rootFolderId: res.data.data.rootFolderId
-            })
-        );
+        window.localStorage.setItem("userInfo", info);
 
         // 将token存入本地
-        window.localStorage.setItem("token", res.data.data.token);
+        window.localStorage.setItem("token", res.data.token);
 
         //   跳转至主界面
         this.$router.push("/index");
 
-      } else if (res.status == 200 && !res.data.success) {
+      } else if (!res.success) {
         this.$message.warning("登录失败,账号或密码错误!");
       }
     },

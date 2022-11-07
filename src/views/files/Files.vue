@@ -13,7 +13,7 @@
           $refs.iconTypeList.collectCurrentFile(flag, 'mult');
         }
       "
-    ></function-bar>
+        @flushData="refreshData"></function-bar>
     <icon-type-list
         :listData="listData"
         :folderList="folderList"
@@ -23,6 +23,7 @@
         @getListData="getListData"
         @getFolderList="getFolderList"
         ref="iconTypeList"
+        @flushData="refreshData"
     ></icon-type-list>
   </div>
 </template>
@@ -54,9 +55,25 @@ export default {
     IconTypeList,
   },
   methods: {
+
+    //刷新数据
+    refreshData(ms) {
+      //状态为加载状态
+      this.$store.commit("updateLoadingState", true);
+      this.getFolderList();
+      this.getListData();
+
+      if (this.time === 2) { //状态为完成状态
+        setTimeout(() => {
+          this.$store.commit("updateLoadingState", false);
+          // 时间间隔
+        }, ms ? ms : 0);
+        this.time = 0
+      }
+    },
+
     // 请求文件列表
     async getListData() {
-
       let res = await this.$request(
           `/file/list/${this.$store.state.currentFolderId}`,
           this.$route.params.path,
@@ -198,10 +215,9 @@ export default {
     }
   },
   watch: {
+    //监视器 ：只要当前文件夹id更新了 就会属性数据
     currentFolderId() {
-      //非首次进入
-      if (this.$store.state.hasCurrentFolderId) {
-        //状态为加载状态
+      if (this.$store.state.hasCurrentFolderId) { //状态为加载状态
         this.$store.commit("updateLoadingState", true);
         this.getFolderList();
         this.getListData();
@@ -214,8 +230,6 @@ export default {
           this.time = 0
         }
       }
-
-
     }
   },
 };
