@@ -812,7 +812,7 @@ export default {
       // 修改vuex中的当前文件夹id
       this.$store.commit("updateCurrentFolderId", item.id);
       console.log("双击打开文件夹", item);
-      console.log(this.folderList);
+      console.log("当前的folderList",this.folderList);
       //修改vuex中的历史栈信息
       this.$store.commit("updateHistoryStackInfo", {id: item.id, name: item.name.substring(0, item.name.length - 1)})
     },

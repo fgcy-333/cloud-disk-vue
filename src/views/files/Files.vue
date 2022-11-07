@@ -1,6 +1,6 @@
 <template>
   <div class="Files" v-loading="$store.state.loadingState"
-       element-loading-text="拼命加载中"
+       element-loading-text=""
        element-loading-background="rgba(255, 255, 255, 1)"
   >
     <function-bar
@@ -61,7 +61,7 @@ export default {
 
     //刷新数据
     refreshData(ms) {
-      this.folderList=[];
+      this.folderList={};
       this.listData=[];
 
       //状态为加载状态
@@ -73,7 +73,7 @@ export default {
         setTimeout(() => {
           this.$store.commit("updateLoadingState", false);
           // 时间间隔
-        }, ms ? ms : 0);
+        }, ms ? ms : 250);
         this.time = 0
       }
     },
@@ -225,7 +225,7 @@ export default {
     currentFolderId() {
       if (this.$store.state.hasCurrentFolderId) { //状态为加载状态
 
-        this.folderList=[];
+        this.folderList={};
         this.listData=[];
 
         this.$store.commit("updateLoadingState", true);
@@ -236,7 +236,7 @@ export default {
           setTimeout(() => {
             this.$store.commit("updateLoadingState", false);
             // 时间间隔
-          }, 0);
+          }, 100);
           this.time = 0
         }
       }
