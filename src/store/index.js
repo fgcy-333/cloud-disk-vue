@@ -52,7 +52,7 @@ export default new Vuex.Store({
         isUserInfoCardMenuShow: false,
 
         // 展示类型 icon table
-        showType: "icon",
+        showType: "table",
 
         // 当前排序方式
         sortType: "time",

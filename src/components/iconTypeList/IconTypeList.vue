@@ -138,7 +138,7 @@
                 : item.name.substr(0, item.name.length - 1)
           }}
         </div>
-        <div class="tableCollect">-</div>
+        <div class="tableCollect"></div>
         <div class="tableItemSize">-</div>
         <div class="tableItemCreateTime">-</div>
       </div>
@@ -174,10 +174,11 @@
           <img
               src="~assets/img/music.png"
               alt=""
-              v-if="1===1"
+              v-if="item.type == 'music'"
               :draggable="false"/>
+
           <el-image
-              :src="item.url"
+              src="~assets/img/img.png"
               alt=""
               v-else-if="item.type == 'image'"
               :draggable="false"
@@ -185,9 +186,12 @@
 
           <div class="tableVideoContainer" v-else-if="item.type == 'video'">
             <video
-                :src="item.url"
+                src="~assets/img/vedio.png"
                 class="tableVideoItem"
-                preload="meta"></video>
+                preload="meta">
+
+            </video>
+
           </div>
 
 
@@ -212,8 +216,9 @@
 
 
         <div class="tableName" v-else>
-          {{ item.fileName == null ? "NoNameFile" : item.fileName + "." + item.type }}
+          {{ item.fileName == null ? "NoNameFile" : item.fileName }}
         </div>
+
         <div class="tableCollect">
           <img src="~assets/img/collect.png" alt="" v-if="item.collection"/>
         </div>
@@ -225,7 +230,7 @@
           }}
         </div>
         <div class="tableItemCreateTime">
-          {{ item.gmtCreate.substr(0, 16) }}
+          {{ item.uploadTime.substr(0, 16) }}
         </div>
       </div>
     </div>
@@ -812,7 +817,7 @@ export default {
       // 修改vuex中的当前文件夹id
       this.$store.commit("updateCurrentFolderId", item.id);
       console.log("双击打开文件夹", item);
-      console.log("当前的folderList",this.folderList);
+      console.log("当前的folderList", this.folderList);
       //修改vuex中的历史栈信息
       this.$store.commit("updateHistoryStackInfo", {id: item.id, name: item.name.substring(0, item.name.length - 1)})
     },
@@ -851,22 +856,12 @@ export default {
       } else if (type == "mult") {
         arr = this.selectFiles;
       }
+
       arr.forEach((i) => {
+        console.log("i 是：",i)
         // 循环执行的速度太快，watch来不及监听 这里通过定时器放到异步执行
         setTimeout(async () => {
-          if (i.filetype == "video" || i.filetype == "audio") {
-            console.log(i);
-            // 请求url
-            let res = await this.$request(
-                "/eduoss/fileoss/getPlayAuth?isList=" + i.videoId,
-                "",
-                "post"
-            );
-            console.log(res);
-            url = res.data.data.urlList[0].url;
-          } else {
             url = "/downloadfile/" + i.url.split("com/")[1];
-          }
           this.$store.commit("updateCurrentDownloadFileInfo", {
             name: i.name + "." + i.type,
             url,
@@ -918,7 +913,7 @@ export default {
             this.selectFiles.forEach((item, index, arr) => {
               // 虽然数组是深拷贝，但是里面的对象仍是指向同一个地址的，所以直接修改 selectFiles的对象就行
               // let idx = this.listData.findIndex((i) => i.id == item.id);
-              // this.listData[idx].collection = 1;
+              // this.listData[idx].collection收藏 = 1;
               arr[index].collection = 1;
             });
             this.$store.commit("updateIsAllFileCollect", true);

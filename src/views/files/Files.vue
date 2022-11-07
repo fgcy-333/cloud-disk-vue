@@ -69,13 +69,11 @@ export default {
       this.getFolderList();
       this.getListData();
 
-      if (this.time === 2) { //状态为完成状态
         setTimeout(() => {
           this.$store.commit("updateLoadingState", false);
           // 时间间隔
         }, ms ? ms : 250);
         this.time = 0
-      }
     },
 
     // 请求文件列表
@@ -232,13 +230,11 @@ export default {
         this.getFolderList();
         this.getListData();
 
-        if (this.time === 2) { //状态为完成状态
           setTimeout(() => {
             this.$store.commit("updateLoadingState", false);
             // 时间间隔
           }, 100);
           this.time = 0
-        }
       }
     }
   },

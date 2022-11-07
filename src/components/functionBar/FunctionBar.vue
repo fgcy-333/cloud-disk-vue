@@ -103,8 +103,7 @@
         <div class="displayType" @click="changeShowType">
           <i
               class="iconfont icon-paixu1"
-              v-if="$store.state.showType == 'icon'"
-          ></i>
+              v-if="$store.state.showType == 'icon'"></i>
           <i class="iconfont icon-sifangge" v-else></i>
         </div>
       </div>
@@ -127,7 +126,7 @@
     </div>
     <div class="tableHead" v-if="$store.state.showType == 'table'">
       <div class="tableName tableHeadName">文件名</div>
-      <div class="tableCollect">收藏</div>
+      <div class="tableCollect"></div>
       <div class="tableItemSize">大小</div>
       <div class="tableItemCreateTime">修改日期</div>
     </div>
