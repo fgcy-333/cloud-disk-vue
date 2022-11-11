@@ -8,6 +8,7 @@
   >
     <div class="IconTypeList" v-if="$store.state.showType == 'icon'">
       <!-- 文件夹 -->
+
       <div
           class="listItem folderItem"
           v-for="(item, index) in currentChildrenFolder"
@@ -51,10 +52,8 @@
       <!-- 文件列表 -->
       <div
           class="listItem"
-          :class="selectFiles.find((i) => i.id == item.fileId) ? 'selectFile' : ''"
           v-for="(item, index) in listData"
           :key="item.fileId"
-          @click="selectCurrentItem(item)"
           @dblclick="openCurrentFile(item)"
           @contextmenu.prevent="showMenu($event, item)"
           :draggable="rightClickMenuType == 'files'"
@@ -72,7 +71,7 @@
 
           <!--图片-->
           <img
-              :src="item.url"
+              src="~assets/img/img.png"
               alt=""
               v-else-if="item.type == 'image'"
               :draggable="false"/>
@@ -116,6 +115,8 @@
 
       </div>
     </div>
+    <!-- 文件列表 -->
+
 
     <div class="tableTypeList" v-else>
       <!-- 文件夹 -->
@@ -128,9 +129,14 @@
           @drop="dropItem(item)"
           :key="index">
 
+        <el-checkbox
+            v-model="item.check"
+            style="margin-top: 13px;margin-right: 7px"
+            @change="selectCurrentItem(item)"></el-checkbox>
         <div class="tableImgContainer">
           <img src="~assets/img/folder.png" alt="" :draggable="false"/>
         </div>
+
         <div class="tableName">
           {{
             item.name == null
@@ -160,16 +166,18 @@
       <!-- 文件列表 -->
       <div
           class="tableListItem"
-          :class="selectFiles.find((i) => i.fileId == item.fileId) ? 'selectFile' : ''"
           v-for="(item,index) in listData"
           :key="item.fileId"
-          @click="selectCurrentItem(item)"
           @dblclick="openCurrentFile(item)"
           @contextmenu.prevent="showMenu($event, item)"
           :draggable="rightClickMenuType == 'files'"
           @dragstart="onDragItemStart($event, item)"
           @dragend="onDragEndItem"
           slot="reference">
+        <el-checkbox
+            v-model="item.check"
+            @change="selectCurrentItem(item)"
+            style="margin-top: 13px;margin-right: 7px"></el-checkbox>
         <div class="tableImgContainer">
           <img
               src="~assets/img/music.png"
@@ -308,7 +316,7 @@
         this.listData.length == 0
       "
     >
-      没有找到相应内容哦!
+      <!--      没有找到相应内容哦!-->
     </div>
     <!-- 返回顶部按钮 -->
     <go-top scrollObj=".iconTypeListContainer"></go-top>
@@ -332,6 +340,8 @@
 </template>
 
 <script>
+import axios from "axios";
+
 let isClickSelectAll = true;
 
 import {getTypeIcon} from "plugins/utils.js";
@@ -465,21 +475,27 @@ export default {
   },
 
   methods: {
+
     // 单击item的回调
     selectCurrentItem(item) {
-      // 操作dom  直接操作dom可以减少循环，提高性能
-      // let listItem = document.querySelectorAll(".listItem");
-
-      // 先判断该选项是否已经被选中
-      let i = this.selectFiles.findIndex((item1) => item1.id == item.fileId);
+      //文件
+      if (typeof (item.id) === "undefined"){
+        item.type="file";
+      }
+      //文件夹
+      else {
+        item.fileId=item.id;
+        item.type="folder";
+      }
+          // 先判断该选项是否已经被选中
+        let i = this.selectFiles.findIndex((item1) => item1.fileId == item.fileId);
       console.log("selectFiles:", this.selectFiles);
-
       if (i == -1) {
         this.selectFiles.push(item);
       } else {
         this.selectFiles.splice(i, 1);
       }
-      this.getIsAllFileCollect();
+      this.$store.commit("updateSelectFiles", this.selectFiles)
     },
 
     // 判断选中文件中是否都收藏了
@@ -784,6 +800,7 @@ export default {
       }
     },
 
+
     // js递归遍历树形json数据，根据关键字查找节点
     //@leafId  查找的id，
     //@nodes   原始Json数据
@@ -857,16 +874,29 @@ export default {
         arr = this.selectFiles;
       }
 
-      arr.forEach((i) => {
-        console.log("i 是：",i)
-        // 循环执行的速度太快，watch来不及监听 这里通过定时器放到异步执行
-        setTimeout(async () => {
-            url = "/downloadfile/" + i.url.split("com/")[1];
-          this.$store.commit("updateCurrentDownloadFileInfo", {
-            name: i.name + "." + i.type,
-            url,
-          });
-        });
+      arr.forEach((fileObj) => {
+        console.log("fileObj 是：", fileObj)
+        const url = `/disk/file/download?userId=${this.$store.state.userInfo.portalUserId}&fileId=${fileObj.fileId}`;
+        axios.get(url, {responseType: "blob"}).catch(err => {
+          console.log(err)
+        })
+            .then(res => {
+              if (!res) {
+                this.$message.error("文件下载失败，请稍后重试!");
+                return;
+              }
+              let blob = new Blob([res.data])
+              let downloadElement = document.createElement('a')
+              let href = window.URL.createObjectURL(blob); //创建下载的链接
+              downloadElement.href = href;
+              downloadElement.download = fileObj.fileName; //下载后文件名
+              document.body.appendChild(downloadElement);
+              downloadElement.click(); //点击下载
+              document.body.removeChild(downloadElement); //下载完成移除元素
+              window.URL.revokeObjectURL(href); //释放blob对象
+            })
+
+
       });
     },
 
@@ -960,7 +990,6 @@ export default {
       if (path == this.$store.state.currentFolder) {
         return;
       }
-
       let arr = [];
       if (!type || type == "current") {
         // arr.push(this.$store.state.rightClickItem.id);

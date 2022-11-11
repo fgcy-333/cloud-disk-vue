@@ -17,6 +17,8 @@
         }
       "
         @flushData="refreshData"></function-bar>
+
+
     <icon-type-list
         :listData="listData"
         :folderList="folderList"
@@ -26,8 +28,8 @@
         @getListData="getListData"
         @getFolderList="getFolderList"
         ref="iconTypeList"
-        @flushData="refreshData"
-    ></icon-type-list>
+
+        @flushData="refreshData"></icon-type-list>
   </div>
 </template>
 
@@ -58,22 +60,21 @@ export default {
     IconTypeList,
   },
   methods: {
-
     //刷新数据
     refreshData(ms) {
-      this.folderList={};
-      this.listData=[];
+      this.folderList = {};
+      this.listData = [];
 
       //状态为加载状态
       this.$store.commit("updateLoadingState", true);
       this.getFolderList();
       this.getListData();
 
-        setTimeout(() => {
-          this.$store.commit("updateLoadingState", false);
-          // 时间间隔
-        }, ms ? ms : 250);
-        this.time = 0
+      setTimeout(() => {
+        this.$store.commit("updateLoadingState", false);
+        // 时间间隔
+      }, ms ? ms : 250);
+      this.time = 0
     },
 
     // 请求文件列表
@@ -85,7 +86,7 @@ export default {
           "params",
           "json"
       );
-      console.log("res", res);
+      // console.log("res", res);
       if (res.success) {
         this.listData = res.data.files;
         this.time++;
@@ -223,18 +224,18 @@ export default {
     currentFolderId() {
       if (this.$store.state.hasCurrentFolderId) { //状态为加载状态
 
-        this.folderList={};
-        this.listData=[];
+        this.folderList = {};
+        this.listData = [];
 
         this.$store.commit("updateLoadingState", true);
         this.getFolderList();
         this.getListData();
 
-          setTimeout(() => {
-            this.$store.commit("updateLoadingState", false);
-            // 时间间隔
-          }, 100);
-          this.time = 0
+        setTimeout(() => {
+          this.$store.commit("updateLoadingState", false);
+          // 时间间隔
+        }, 100);
+        this.time = 0
       }
     }
   },

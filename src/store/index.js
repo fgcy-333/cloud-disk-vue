@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import fa from "element-ui/src/locale/lang/fa";
 
 Vue.use(Vuex)
 
@@ -75,13 +76,20 @@ export default new Vuex.Store({
         //历史栈当前指针
         historyStackPoint: -1,
 
-
         //根文件夹id
         rootFolderId: -1,
 
-        loadingState: false
+        //加载状态标志
+        loadingState: false,
+
+        //文件选中状态
+        clearFilesCheckbox: false
     },
     mutations: {
+        //修改文件选中状态样式
+        updateClearFileStyle(state, flag) {
+            state.clearFileStyle = flag;
+        },
         //修改加载状态
         updateLoadingState(state, flag) {
             state.loadingState = flag;

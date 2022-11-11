@@ -26,12 +26,16 @@ export function request(url, params, method, type) {
         });
 
 
-    instance.interceptors.response.use(resp => {
+    instance.interceptors.response.use(
+        resp => {
             return resp.data;
-        },
+        }
+        ,
         error => {
+            console.log("全局拦截相应异常", error)
             return error;
-        });
+        }
+    );
 
 
     if (type !== 'json') {
@@ -40,7 +44,7 @@ export function request(url, params, method, type) {
             data: params,
             method: method
         })
-    }else {
+    } else {
         return instance.request({
             url,
             data: params,

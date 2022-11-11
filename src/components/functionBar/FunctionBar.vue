@@ -25,18 +25,26 @@
             @click="createFolder"
             :disabled="!isCreateAble">
           <i class="iconfont icon-add"></i> 新建
-        </el-button
-        >
+        </el-button>
+
         <el-button
             size="small"
             class="selectAll"
             :class="isSelectAll ? 'select' : ''"
-            @click="selectAll"
-        >
+            @click="selectAll">
           <i class="iconfont icon-complete"></i>
           全选
-        </el-button
+        </el-button>
+
+        <el-button
+            size="small"
+            @click="multipleDownload"
         >
+          <i class="el-icon-download"></i>
+          下载
+        </el-button>
+
+
         <!-- 多选操作按钮 -->
         <div class="multButtons" v-if="isMultBtnsShow">
           <div class="tips">多选操作按钮</div>
@@ -46,8 +54,7 @@
             </div>
             <div
                 @click="$emit('multCollect', true)"
-                v-if="!$store.state.isAllFileCollect"
-            >
+                v-if="!$store.state.isAllFileCollect">
               <i class="iconfont icon-favorite"></i> 收藏
             </div>
             <div @click="$emit('multCollect', false)" v-else>
@@ -135,6 +142,7 @@
 
 <script>
 import ProgressDialog from "../progressDialog/ProgressDialog.vue";
+import axios from "axios";
 
 export default {
   name: "FunctionBar",
@@ -178,6 +186,67 @@ export default {
     }
   },
   methods: {
+    //多文件下载
+    multipleDownload() {
+      const fileList = this.$store.state.selectFiles;
+      fileList.forEach(obj => {
+        obj.check = false;
+      })
+
+      this.$store.commit("updateSelectFiles", []);
+
+      if (fileList.length <= 0) {
+        this.$message.error("请至少选择一个文件")
+        return;
+      } else {
+        let folderIdStr = "";
+        let fileIdStr = "";
+        fileList.forEach(obj => {
+          if (obj.type === 'folder') {
+            folderIdStr = obj.id + ","
+          } else {
+            fileIdStr = obj.fileId + ",";
+          }
+        });
+
+        //拼接字符串
+        if (folderIdStr.length >= 1) {
+          folderIdStr = folderIdStr.substring(0, folderIdStr.length - 1);
+        }
+        if (fileIdStr.length >= 1) {
+          fileIdStr = fileIdStr.substring(0, fileIdStr.length - 1);
+        }
+
+        // 文件夹下载
+        const url = `/disk/folder/download?fileIds=${fileIdStr}&folderIds=${folderIdStr}`;
+        axios.get(url,
+            {
+              responseType: "blob"
+            }
+        ).catch(err => {
+          console.log(err)
+        })
+            .then(res => {
+              let str = res.headers["content-disposition"];
+              let fileName = str.substring(str.indexOf("=") + 1);
+              debugger
+              if (!res) {
+                this.$message.error("文件下载失败，请稍后重试!");
+                return;
+              }
+              let blob = new Blob([res.data])
+              let downloadElement = document.createElement('a')
+              let href = window.URL.createObjectURL(blob); //创建下载的链接
+              downloadElement.href = href;
+              downloadElement.download = fileName; //下载后文件名
+              document.body.appendChild(downloadElement);
+              downloadElement.click(); //点击下载
+              document.body.removeChild(downloadElement); //下载完成移除元素
+              window.URL.revokeObjectURL(href); //释放blob对象
+            })
+      }
+    },
+
     turnToOther(item) {
       let index = 0;
       for (let i = 0; i < this.pathArr.length; i++) {
@@ -210,7 +279,7 @@ export default {
 
     // 上传成功的钩子
     async upload(response, file) {
-      console.log("上传文件后回调：",response);
+      // console.log("上传文件后回调：",response);
       if (!response.success) {
         this.$message.error("上传失败,请稍后重试!");
         // this.isUploadProgressShow = false;
@@ -228,13 +297,13 @@ export default {
 
       if (response.success) {
         this.$message.success("文件上传成功!");
-        this.$emit("flushData",0);
+        this.$emit("flushData", 0);
         // this.$emit("pushUploadData", res.data.data.file);
 
         // 更新用户存储空间
-      /*  let userInfo = this.$store.state.userInfo;
-        userInfo.neicun += response.data.file.size;
-        this.$store.commit("updateUserInfo", userInfo);*/
+        /*  let userInfo = this.$store.state.userInfo;
+          userInfo.neicun += response.data.file.size;
+          this.$store.commit("updateUserInfo", userInfo);*/
       } else {
         this.$message.error("文件上传失败，请稍后重试!");
       }
